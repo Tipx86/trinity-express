@@ -30,13 +30,23 @@ export default function RoutesPage() {
   }, []);
 
   const getPrice = (r: any) => {
-    switch (currency) {
-      case 'UGX': return formatCurrency(r.basePriceUgx, 'UGX');
-      case 'KES': return formatCurrency(r.basePriceKes, 'KES');
-      case 'USD': return formatCurrency(r.basePriceUsd, 'USD');
-      case 'SSP': return formatCurrency(r.basePriceSsp || 0, 'SSP');
-      default: return formatCurrency(r.basePriceRwf, 'RWF');
+    const fromName = r.origin?.name || '';
+    const toName = r.destination?.name || '';
+    const fromLower = fromName.toLowerCase();
+    
+    if (fromLower.includes('kigali') || fromLower.includes('rwanda')) {
+      return formatCurrency(r.basePriceRwf, 'RWF');
     }
+    if (fromLower.includes('kampala')) {
+      return formatCurrency(r.basePriceUgx, 'UGX');
+    }
+    if (fromLower.includes('nairobi') || fromLower.includes('mombasa') || fromLower.includes('kisumu') || fromLower.includes('busia')) {
+      return formatCurrency(r.basePriceKes, 'KES');
+    }
+    if (fromLower.includes('juba') || fromLower.includes('bor')) {
+      return formatCurrency(r.basePriceSsp || 0, 'SSP');
+    }
+    return formatCurrency(r.basePriceRwf, 'RWF');
   };
 
   // High-quality bus fleet images matching the user reference design

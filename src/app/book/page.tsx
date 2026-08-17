@@ -10,7 +10,7 @@ import PaymentForm from '@/components/booking/PaymentForm';
 import BookingSummaryCard from '@/components/booking/BookingSummaryCard';
 import { Trip, PassengerInput } from '@/types';
 import { AlertCircle, Bus, MapPin } from 'lucide-react';
-import { formatCurrency, formatDate, formatTime, generateBookingRef } from '@/lib/formatters';
+import { formatCurrency, formatDate, formatTime, generateBookingRef, getRouteNativeCurrency } from '@/lib/formatters';
 
 function BookingWizardContent() {
   const searchParams = useSearchParams();
@@ -23,7 +23,7 @@ function BookingWizardContent() {
 
   // Wizard state
   const [currentStep, setCurrentStep] = useState<number>(1);
-  const [currency, setCurrency] = useState<string>('RWF');
+  const [currency, setCurrency] = useState<string>(getRouteNativeCurrency(initialFrom, initialTo));
   const [sessionId, setSessionId] = useState<string>('');
 
   // Step 1 & 2: Search Parameters & Trips list
@@ -57,8 +57,8 @@ function BookingWizardContent() {
     }
     setSessionId(sid);
 
-    const savedCur = localStorage.getItem('trinity_currency') || 'RWF';
-    setCurrency(savedCur);
+    const nativeCur = getRouteNativeCurrency(initialFrom, initialTo);
+    setCurrency(nativeCur);
 
     if (initialFrom && initialTo) {
       searchTrips(initialFrom, initialTo, initialDate);
@@ -94,6 +94,8 @@ function BookingWizardContent() {
   const searchTrips = async (from: string, to: string, date: string) => {
     setLoadingTrips(true);
     setErrorMessage(null);
+    const nativeCur = getRouteNativeCurrency(from, to);
+    setCurrency(nativeCur);
     try {
       const res = await fetch(
         `/api/trips/search?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${date}&sessionId=${sessionId}`
@@ -111,6 +113,8 @@ function BookingWizardContent() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const nativeCur = getRouteNativeCurrency(fromCity, toCity);
+    setCurrency(nativeCur);
     searchTrips(fromCity, toCity, travelDate);
     setCurrentStep(2);
   };

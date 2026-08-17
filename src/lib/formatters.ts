@@ -1,3 +1,12 @@
+export function getRouteNativeCurrency(fromCity: string, toCity?: string): string {
+  const f = (fromCity || '').toLowerCase();
+  if (f.includes('kigali') || f.includes('musanze') || f.includes('rwanda')) return 'RWF';
+  if (f.includes('kampala') || f.includes('mbarara') || f.includes('goma')) return 'UGX';
+  if (f.includes('nairobi') || f.includes('mombasa') || f.includes('kisumu') || f.includes('busia')) return 'KES';
+  if (f.includes('juba') || f.includes('bor') || f.includes('ssp') || f.includes('sudan')) return 'SSP';
+  return 'RWF';
+}
+
 export function formatCurrency(amount: number, currency: string = 'RWF'): string {
   const rounded = Math.round(amount);
   switch (currency.toUpperCase()) {
