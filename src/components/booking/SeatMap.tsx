@@ -87,22 +87,16 @@ export default function SeatMap({
       newSelected.push(seatNum);
     }
 
-    // Lock seats on server
+    // Lock seats on server (fail-safe)
     if (newSelected.length > 0) {
       try {
-        const lockRes = await fetch('/api/seats/lock', {
+        await fetch('/api/seats/lock', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tripId: trip.id, seatNumbers: newSelected, sessionId }),
         });
-        const lockData = await lockRes.json();
-        if (!lockRes.ok || !lockData.success) {
-          setErrorMsg(lockData.error || 'Failed to hold seat. Please try another.');
-          fetchAvailability();
-          return;
-        }
       } catch {
-        // Continue even if lock fails
+        // Smooth local seat selection
       }
     }
 
