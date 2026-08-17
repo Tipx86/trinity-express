@@ -47,6 +47,9 @@ export const metadata: Metadata = {
     title: 'Trinity Express — Book Bus Tickets Online',
     description: 'Cross-border bus tickets: Kigali, Kampala, Nairobi, Juba. Book online, pick your seat, pay with M-Pesa.',
   },
+  verification: {
+    google: 'ne-2ub8qraWwDv2XTXBFA-TczkHvNBAKpkbubccQUMo',
+  },
   robots: {
     index: true,
     follow: true,
