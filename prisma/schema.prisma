@@ -1,0 +1,241 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  phone         String?
+  role          String    @default("USER") // USER, ADMIN, STAFF
+  nationality   String?
+  idNumber      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  bookings      Booking[]
+
+  @@map("users")
+}
+
+model Destination {
+  id           String   @id @default(cuid())
+  name         String   // e.g. Kigali
+  code         String   // e.g. KGL
+  country      String   // e.g. Rwanda
+  countryCode  String   // e.g. RW
+  terminalName String   // e.g. Nyabugogo Bus Park
+  address      String?
+  image        String
+  description  String
+  isPopular    Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  originRoutes      Route[] @relation("OriginDestination")
+  destinationRoutes Route[] @relation("DestDestination")
+
+  @@map("destinations")
+}
+
+model Route {
+  id              String       @id @default(cuid())
+  originId        String
+  destinationId   String
+  distanceKm      Int
+  durationMinutes Int
+  basePriceRwf    Int
+  basePriceUgx    Int
+  basePriceKes    Int
+  basePriceUsd    Int
+  basePriceSsp    Int          @default(0)
+  stops           String?      // Comma-separated intermediate points (e.g. Katuna, Mbarara, Masaka)
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  origin          Destination  @relation("OriginDestination", fields: [originId], references: [id])
+  destination     Destination  @relation("DestDestination", fields: [destinationId], references: [id])
+  trips           Trip[]
+
+  @@map("routes")
+}
+
+model Bus {
+  id           String   @id @default(cuid())
+  plateNumber  String   @unique
+  busModel     String   // e.g. Scania Touring HD, Marcopolo Paradiso G8
+  busType      String   // VIP_EXECUTIVE, LUXURY_COACH, STANDARD_EXPRESS
+  seatCount    Int      @default(48)
+  seatLayout   String   @default("2x2") // 2x2 or 2x1
+  amenities    String   @default("WIFI,USB,AC,WATER,TOILET")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  trips        Trip[]
+
+  @@map("buses")
+}
+
+model Trip {
+  id            String    @id @default(cuid())
+  routeId       String
+  busId         String
+  departureDate String    // YYYY-MM-DD
+  departureTime String    // HH:mm
+  arrivalTime   String    // HH:mm
+  priceRwf      Int
+  priceUgx      Int
+  priceKes      Int
+  priceUsd      Int
+  priceSsp      Int       @default(0)
+  status        String    @default("SCHEDULED") // SCHEDULED, BOARDING, IN_TRANSIT, COMPLETED, CANCELLED
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  route         Route     @relation(fields: [routeId], references: [id])
+  bus           Bus       @relation(fields: [busId], references: [id])
+  bookings      Booking[]
+  seatLocks     SeatLock[]
+
+  @@map("trips")
+}
+
+model SeatLock {
+  id          String   @id @default(cuid())
+  tripId      String
+  seatNumber  Int
+  lockedUntil DateTime
+  sessionId   String
+  createdAt   DateTime @default(now())
+
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, seatNumber])
+  @@map("seat_locks")
+}
+
+model Booking {
+  id            String      @id @default(cuid())
+  bookingRef    String      @unique // e.g. TE-948123
+  userId        String?
+  tripId        String
+  contactName   String
+  contactEmail  String
+  contactPhone  String
+  totalAmount   Int
+  currency      String      @default("RWF") // RWF, UGX, KES, USD
+  status        String      @default("PENDING") // PENDING, CONFIRMED, CANCELLED, REFUNDED
+  paymentStatus String      @default("UNPAID")  // UNPAID, PAID, REFUNDED, FAILED
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user          User?       @relation(fields: [userId], references: [id])
+  trip          Trip        @relation(fields: [tripId], references: [id])
+  passengers    Passenger[]
+  payments      Payment[]
+  tickets       Ticket[]
+
+  @@map("bookings")
+}
+
+model Passenger {
+  id                String    @id @default(cuid())
+  bookingId         String
+  seatNumber        Int
+  fullName          String
+  nationality       String
+  idPassportNumber  String
+  phone             String?
+  email             String?
+  emergencyContact  String?
+  ticketNumber      String    @unique // e.g. TKT-TE948123-01
+  createdAt         DateTime  @default(now())
+
+  booking           Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  ticket            Ticket?
+
+  @@unique([bookingId, seatNumber])
+  @@map("passengers")
+}
+
+model Payment {
+  id             String    @id @default(cuid())
+  bookingId      String
+  transactionRef String    @unique // e.g. MP-TX-918231
+  amount         Int
+  currency       String
+  provider       String    // MPESA, AIRTEL_MONEY, CARD, BANK
+  status         String    // PENDING, COMPLETED, FAILED, REFUNDED
+  phoneNumber    String?
+  cardLast4      String?
+  rawResponse    String?
+  createdAt      DateTime  @default(now())
+
+  booking        Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Ticket {
+  id            String    @id @default(cuid())
+  ticketNumber  String    @unique
+  bookingId     String
+  passengerId   String    @unique
+  qrData        String
+  securityToken String
+  status        String    @default("VALID") // VALID, CHECKED_IN, CANCELLED
+  checkedInAt   DateTime?
+  checkedInBy   String?
+  createdAt     DateTime  @default(now())
+
+  booking       Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  passenger     Passenger @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+
+  @@map("tickets")
+}
+
+model Partner {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // REGULATOR, INSURANCE, CORPORATE
+  logoUrl     String?
+  description String?
+  websiteUrl  String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("partners")
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String   // BOOKING, BORDER_CROSSING, LUGGAGE, PAYMENT
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+
+  @@map("faqs")
+}
+
+model SiteSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  category    String   @default("GENERAL")
+
+  @@map("site_settings")
+}
