@@ -48,10 +48,21 @@ export default function PopularRoutes() {
     'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80',
     'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=80',
     'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1609137144822-7773f3246eb3?auto=format&fit=crop&w=600&q=80',
+    '/images/trinity_bus_fleet.png',
     'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=600&q=80',
     'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=600&q=80',
   ];
+
+  const getRouteImage = (route: any, idx: number) => {
+    const origin = (route.origin?.name || '').toLowerCase();
+    const dest = (route.destination?.name || '').toLowerCase();
+
+    if (origin.includes('kigali') && dest.includes('busia')) {
+      return '/images/trinity_bus_fleet.png';
+    }
+
+    return sampleImages[idx % sampleImages.length];
+  };
 
   return (
     <section className="py-16 bg-white">
@@ -70,11 +81,14 @@ export default function PopularRoutes() {
               className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition text-left flex flex-col justify-between"
             >
               <div>
-                <div className="h-40 relative">
+                <div className="h-40 relative bg-slate-100">
                   <img
-                    src={sampleImages[idx % sampleImages.length]}
+                    src={getRouteImage(route, idx)}
                     alt={`${route.origin.name} to ${route.destination.name}`}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/trinity_bus_fleet.png';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
                   <div className="absolute bottom-3 left-3 text-white font-black text-lg font-heading">
