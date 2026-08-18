@@ -77,7 +77,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center space-x-2.5 text-sm">
                   <Phone className="w-4 h-4 text-[#25D366] flex-shrink-0" />
-                  <span className="font-mono font-bold text-slate-900">+254 7146613385</span>
+                  <span className="font-mono font-bold text-slate-900">+254 714661385</span>
                 </div>
                 <div className="flex items-center space-x-2.5 text-xs text-slate-500">
                   <Clock className="w-4 h-4 text-amber-500 flex-shrink-0" />

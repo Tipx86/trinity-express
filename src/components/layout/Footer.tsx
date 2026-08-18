@@ -148,7 +148,7 @@ export default function Footer() {
               <div>
                 <p className="font-semibold text-slate-200">Nairobi Terminal:</p>
                 <p className="text-slate-400">River Road / Accra Rd</p>
-                <p className="text-emerald-400">+254 7146613385</p>
+                <p className="text-emerald-400">+254 714661385</p>
               </div>
             </div>
           </div>
