@@ -57,6 +57,19 @@ export default function PassengerForm({
     const updated = [...passengers];
     updated[index] = { ...updated[index], [field]: value };
     onPassengersChange(updated);
+
+    // Auto-sync Passenger 1 → Primary Contact Details
+    if (index === 0) {
+      if (field === 'fullName') {
+        onContactChange({ name: value, email: contactEmail, phone: contactPhone });
+      }
+      if (field === 'phone') {
+        onContactChange({ name: contactName, email: contactEmail, phone: value });
+      }
+      if (field === 'email') {
+        onContactChange({ name: contactName, email: value, phone: contactPhone });
+      }
+    }
   };
 
   const handleAutoFillPassengerOne = () => {
@@ -96,14 +109,20 @@ export default function PassengerForm({
         </div>
       </div>
 
-      {/* Primary Contact Details */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* Primary Contact Details — auto-synced from Passenger 1 */}
+      <div className="bg-white rounded-2xl border border-[#0072C6]/40 shadow-sm overflow-hidden">
         {/* Card header */}
-        <div className="bg-[#0B1E38] px-5 py-3.5">
-          <h3 className="text-sm font-bold text-white">Primary Contact Details</h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Where we will send your booking confirmation, digital ticket, and SMS alerts.
-          </p>
+        <div className="bg-[#0B1E38] px-5 py-3.5 flex items-start justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-white">Primary Contact Details</h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Automatically filled from Passenger 1 below. Booking confirmation, digital ticket, and SMS alerts are sent here.
+            </p>
+          </div>
+          <span className="ml-3 mt-0.5 flex-shrink-0 inline-flex items-center space-x-1 bg-[#0072C6]/20 border border-[#0072C6]/40 text-[#38BDF8] text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <Sparkles className="w-3 h-3" />
+            <span>Auto-filled</span>
+          </span>
         </div>
 
         <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -111,16 +130,16 @@ export default function PassengerForm({
             <label className={labelClass}>
               <span className="flex items-center space-x-1">
                 <User className="w-3.5 h-3.5 text-[#0072C6]" />
-                <span>Contact Full Name *</span>
+                <span>Contact Full Name</span>
               </span>
             </label>
             <input
               type="text"
-              required
+              readOnly
+              tabIndex={-1}
               value={contactName}
-              onChange={(e) => onContactChange({ name: e.target.value, email: contactEmail, phone: contactPhone })}
-              placeholder="e.g. Kevin Mugisha"
-              className={inputClass}
+              placeholder="Fill in Passenger 1 name below"
+              className={`${inputClass} bg-slate-100 text-slate-500 cursor-default`}
             />
           </div>
 
@@ -128,16 +147,16 @@ export default function PassengerForm({
             <label className={labelClass}>
               <span className="flex items-center space-x-1">
                 <Mail className="w-3.5 h-3.5 text-[#0072C6]" />
-                <span>Email Address *</span>
+                <span>Email Address</span>
               </span>
             </label>
             <input
               type="email"
-              required
+              readOnly
+              tabIndex={-1}
               value={contactEmail}
-              onChange={(e) => onContactChange({ name: contactName, email: e.target.value, phone: contactPhone })}
-              placeholder="e.g. kevin@example.com"
-              className={inputClass}
+              placeholder="Fill in Passenger 1 email below"
+              className={`${inputClass} bg-slate-100 text-slate-500 cursor-default`}
             />
           </div>
 
@@ -145,16 +164,16 @@ export default function PassengerForm({
             <label className={labelClass}>
               <span className="flex items-center space-x-1">
                 <Phone className="w-3.5 h-3.5 text-[#0072C6]" />
-                <span>Phone / WhatsApp *</span>
+                <span>Phone / WhatsApp</span>
               </span>
             </label>
             <input
               type="tel"
-              required
+              readOnly
+              tabIndex={-1}
               value={contactPhone}
-              onChange={(e) => onContactChange({ name: contactName, email: contactEmail, phone: e.target.value })}
-              placeholder="+250 788 123 456"
-              className={`${inputClass} font-mono`}
+              placeholder="Fill in Passenger 1 phone below"
+              className={`${inputClass} bg-slate-100 text-slate-500 cursor-default font-mono`}
             />
           </div>
         </div>
@@ -207,11 +226,23 @@ export default function PassengerForm({
                   <span className="font-bold text-slate-800 text-sm">
                     Passenger {idx + 1}
                   </span>
+                  {idx === 0 && (
+                    <span className="inline-flex items-center space-x-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <Sparkles className="w-2.5 h-2.5" />
+                      <span>Primary Contact</span>
+                    </span>
+                  )}
                 </div>
                 <span className="px-3 py-1 rounded-full bg-[#0072C6]/10 text-[#0072C6] font-black text-xs border border-[#0072C6]/20">
                   Seat #{seatNum}
                 </span>
               </div>
+              {idx === 0 && (
+                <div className="px-5 py-2.5 bg-emerald-50 border-b border-emerald-100 flex items-center space-x-2 text-xs text-emerald-700">
+                  <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>Details entered here will automatically become the <strong>Primary Contact</strong> where tickets and booking confirmations are sent.</span>
+                </div>
+              )}
 
               {/* Fields */}
               <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
