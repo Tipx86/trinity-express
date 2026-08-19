@@ -62,6 +62,30 @@ export const metadata: Metadata = {
 };
 
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'TravelAgency',
+  name: 'Trinity Express',
+  alternateName: 'Trinity Express Bus Service',
+  url: 'https://www.trinityexpresss.com',
+  logo: 'https://www.trinityexpresss.com/images/trinity_bus_fleet.png',
+  image: 'https://www.trinityexpresss.com/images/trinity_bus_fleet.png',
+  description: 'Book cross-border bus tickets online across Rwanda, Uganda, Kenya, and South Sudan with Trinity Express. Real-time seat selection & instant ticket reservation.',
+  telephone: '+254714661385',
+  areaServed: ['Rwanda', 'Uganda', 'Kenya', 'South Sudan'],
+  paymentAccepted: ['Cash', 'Credit Card', 'M-Pesa', 'Airtel Money', 'MTN Mobile Money'],
+  currenciesAccepted: ['RWF', 'UGX', 'KES', 'USD', 'SSP'],
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'River Road / Accra Rd',
+    addressLocality: 'Nairobi',
+    addressCountry: 'KE',
+  },
+  sameAs: [
+    'https://wa.me/254714661385',
+  ],
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -69,6 +93,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark scroll-smooth">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="min-h-screen flex flex-col bg-trinity-navy-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
         <Navbar />
         <main className="flex-grow">
