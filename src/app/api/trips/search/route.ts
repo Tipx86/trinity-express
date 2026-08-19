@@ -44,6 +44,35 @@ function cleanCity(rawName: string): string {
   return rawName.split('(')[0].trim();
 }
 
+function isTripInPast(tripDate: string, departureTimeStr: string): boolean {
+  try {
+    const now = new Date();
+    const eatFormatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Africa/Nairobi',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    const parts = eatFormatter.formatToParts(now);
+    const getPart = (type: string) => parts.find((p) => p.type === type)?.value || '00';
+    const todayStr = `${getPart('year')}-${getPart('month')}-${getPart('day')}`;
+    const nowMinutes = parseInt(getPart('hour'), 10) * 60 + parseInt(getPart('minute'), 10);
+
+    if (tripDate < todayStr) return true;
+    if (tripDate === todayStr) {
+      const [h, m] = (departureTimeStr || '00:00').split(':').map((v) => parseInt(v, 10));
+      const tripMinutes = (h || 0) * 60 + (m || 0);
+      return tripMinutes <= nowMinutes;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function generateDailyTrips(fromCity: string, toCity: string, date: string) {
   const routeKey = `${fromCity}-${toCity}`;
   const pricing = ROUTE_PRICES[routeKey] || { rwf: 38000, ugx: 100000, kes: 4000, usd: 30, duration: 480 };
@@ -84,41 +113,43 @@ function generateDailyTrips(fromCity: string, toCity: string, date: string) {
     },
   ];
 
-  return buses.map((b) => ({
-    id: b.id,
-    routeId: `route_${fromCity}_${toCity}`,
-    busId: `bus_${b.plateNumber}`,
-    departureDate: date,
-    departureTime: b.departureTime,
-    arrivalTime: b.arrivalTime,
-    priceRwf: pricing.rwf,
-    priceUgx: pricing.ugx,
-    priceKes: pricing.kes,
-    priceUsd: pricing.usd,
-    priceSsp: pricing.ssp || 0,
-    status: 'SCHEDULED',
-    availableSeats: b.seatCount - 4,
-    occupiedSeats: [1, 2, 12, 14],
-    lockedSeats: [],
-    route: {
-      id: `route_${fromCity}_${toCity}`,
-      originId: `dest_${fromCity}`,
-      destinationId: `dest_${toCity}`,
-      distanceKm: 500,
-      durationMinutes: pricing.duration,
-      origin: { name: fromCity, terminalName: originTerminal, country: 'East Africa' },
-      destination: { name: toCity, terminalName: destTerminal, country: 'East Africa' },
-    },
-    bus: {
-      id: `bus_${b.plateNumber}`,
-      busModel: b.busModel,
-      plateNumber: b.plateNumber,
-      busType: b.busType,
-      seatLayout: b.seatLayout,
-      seatCount: b.seatCount,
-      amenities: ['WIFI', 'AC', 'COMPLIMENTARY_WATER', 'USB_POWER'],
-    },
-  }));
+  return buses
+    .map((b) => ({
+      id: b.id,
+      routeId: `route_${fromCity}_${toCity}`,
+      busId: `bus_${b.plateNumber}`,
+      departureDate: date,
+      departureTime: b.departureTime,
+      arrivalTime: b.arrivalTime,
+      priceRwf: pricing.rwf,
+      priceUgx: pricing.ugx,
+      priceKes: pricing.kes,
+      priceUsd: pricing.usd,
+      priceSsp: pricing.ssp || 0,
+      status: 'SCHEDULED',
+      availableSeats: b.seatCount - 4,
+      occupiedSeats: [1, 2, 12, 14],
+      lockedSeats: [],
+      route: {
+        id: `route_${fromCity}_${toCity}`,
+        originId: `dest_${fromCity}`,
+        destinationId: `dest_${toCity}`,
+        distanceKm: 500,
+        durationMinutes: pricing.duration,
+        origin: { name: fromCity, terminalName: originTerminal, country: 'East Africa' },
+        destination: { name: toCity, terminalName: destTerminal, country: 'East Africa' },
+      },
+      bus: {
+        id: `bus_${b.plateNumber}`,
+        busModel: b.busModel,
+        plateNumber: b.plateNumber,
+        busType: b.busType,
+        seatLayout: b.seatLayout,
+        seatCount: b.seatCount,
+        amenities: ['WIFI', 'AC', 'COMPLIMENTARY_WATER', 'USB_POWER'],
+      },
+    }))
+    .filter((trip) => !isTripInPast(trip.departureDate, trip.departureTime));
 }
 
 export async function GET(req: NextRequest) {

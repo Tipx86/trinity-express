@@ -313,10 +313,26 @@ function BookingWizardContent() {
                     <p className="text-slate-500 text-sm">Searching available buses...</p>
                   </div>
                 ) : trips.length === 0 ? (
-                  <div className="p-8 bg-white rounded-2xl border border-slate-200 text-center">
-                    <Bus className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                    <p className="text-sm font-bold text-slate-600">No buses found for this route and date.</p>
-                    <p className="text-xs text-slate-400 mt-1">Try a different date or route.</p>
+                  <div className="p-8 bg-white rounded-2xl border border-slate-200 text-center space-y-3">
+                    <Bus className="w-10 h-10 text-slate-300 mx-auto" />
+                    <p className="text-base font-bold text-slate-800">No more buses available for this date</p>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto">
+                      All scheduled departures for this date have already departed. Please select tomorrow or an upcoming date to view available departures.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextDay = new Date(travelDate || new Date().toISOString().split('T')[0]);
+                        nextDay.setDate(nextDay.getDate() + 1);
+                        const nextDayStr = nextDay.toISOString().split('T')[0];
+                        setTravelDate(nextDayStr);
+                        searchTrips(fromCity, toCity, nextDayStr);
+                      }}
+                      className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-[#0072C6] hover:bg-[#005FA5] text-white text-xs font-bold shadow-sm transition"
+                    >
+                      <span>View Tomorrow&apos;s Buses</span>
+                      <span>→</span>
+                    </button>
                   </div>
                 ) : (
                   trips.map((trip) => (
