@@ -4,6 +4,7 @@ import React from 'react';
 import { Bus, Calendar, Clock, Armchair, ArrowRight, Receipt, MapPin } from 'lucide-react';
 import { formatCurrency, formatDate, formatTime } from '@/lib/formatters';
 import { Trip } from '@/types';
+import { getSeatLabel } from './SeatMap';
 
 interface BookingSummaryCardProps {
   trip?: Trip | null;
@@ -122,10 +123,10 @@ export default function BookingSummaryCard({
                 {[...selectedSeats].sort((a, b) => a - b).map(seat => (
                   <span
                     key={seat}
-                    className="inline-flex items-center space-x-0.5 bg-[#0072C6]/10 text-[#0072C6] px-1.5 py-0.5 rounded text-[10px] font-bold"
+                    className="inline-flex items-center space-x-0.5 bg-[#0072C6]/10 text-[#0072C6] px-2 py-0.5 rounded-md text-[11px] font-bold"
                   >
                     <Armchair className="w-2.5 h-2.5" />
-                    <span>{seat}</span>
+                    <span>Seat {getSeatLabel(seat)}</span>
                   </span>
                 ))}
               </div>

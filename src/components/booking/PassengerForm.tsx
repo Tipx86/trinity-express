@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, Globe, FileText, ShieldAlert, Sparkles } from 'lucide-react';
 import { PassengerInput } from '@/types';
+import { getSeatLabel } from './SeatMap';
 
 interface PassengerFormProps {
   selectedSeats: number[];
@@ -167,7 +168,7 @@ export default function PassengerForm({
                   )}
                 </div>
                 <span className="px-3 py-1 rounded-full bg-[#0072C6]/10 text-[#0072C6] font-black text-xs border border-[#0072C6]/20">
-                  Seat #{seatNum}
+                  Seat {getSeatLabel(seatNum)}
                 </span>
               </div>
               {idx === 0 && (

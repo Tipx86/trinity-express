@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { MessageCircle, ShieldCheck, MapPin, Calendar, Clock, Armchair, ArrowRight } from 'lucide-react';
+import { getSeatLabel } from './SeatMap';
 
 interface PaymentFormProps {
   bookingRef: string;
@@ -41,7 +42,7 @@ export default function PaymentForm({
 
   const formattedDateLong = getLongDate(travelDate);
   const seatCount = seatNumbers.length;
-  const seatText = `${seatNumbers.sort((a, b) => a - b).join(', ')} (${seatCount} seat${seatCount > 1 ? 's' : ''})`;
+  const seatText = `${seatNumbers.map((s) => getSeatLabel(s)).join(', ')} (${seatCount} seat${seatCount > 1 ? 's' : ''})`;
 
   // Pre-filled WhatsApp message (hidden from UI — sent directly via URL)
   const messageTemplate =
