@@ -73,6 +73,60 @@ function isTripInPast(tripDate: string, departureTimeStr: string): boolean {
   }
 }
 
+function getOccupiedSeatsForTrip(tripId: string, travelDate: string, totalSeats = 40): number[] {
+  try {
+    const now = new Date();
+    const eatFormatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Africa/Nairobi',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    const parts = eatFormatter.formatToParts(now);
+    const getPart = (type: string) => parts.find((p) => p.type === type)?.value || '00';
+    const todayStr = `${getPart('year')}-${getPart('month')}-${getPart('day')}`;
+
+    const tripD = new Date(travelDate);
+    const todayD = new Date(todayStr);
+    const diffDays = Math.max(0, Math.round((tripD.getTime() - todayD.getTime()) / (1000 * 60 * 60 * 24)));
+
+    let hash = 0;
+    for (let i = 0; i < tripId.length; i++) {
+      hash = (hash * 31 + tripId.charCodeAt(i)) >>> 0;
+    }
+
+    let targetCount: number;
+    if (diffDays <= 1) {
+      // Near in time (today/tomorrow): 35% - 40% full (14 to 16 seats)
+      targetCount = 14 + (hash % 3);
+    } else if (diffDays <= 3) {
+      // 2 to 3 days ahead: 20% - 25% full (8 to 10 seats)
+      targetCount = 8 + (hash % 3);
+    } else {
+      // Further ahead: 10% - 15% full (4 to 6 seats)
+      targetCount = 4 + (hash % 3);
+    }
+
+    const candidateSeats: number[] = [];
+    for (let seat = 1; seat <= totalSeats; seat++) {
+      candidateSeats.push(seat);
+    }
+
+    let seed = hash || 12345;
+    for (let i = candidateSeats.length - 1; i > 0; i--) {
+      seed = (seed * 9301 + 49297) % 233280;
+      const j = Math.floor((seed / 233280) * (i + 1));
+      const temp = candidateSeats[i];
+      candidateSeats[i] = candidateSeats[j];
+      candidateSeats[j] = temp;
+    }
+
+    return candidateSeats.slice(0, targetCount).sort((a, b) => a - b);
+  } catch {
+    return [1, 2, 7, 12, 14, 22, 28, 35];
+  }
+}
+
 function generateDailyTrips(fromCity: string, toCity: string, date: string) {
   const routeKey = `${fromCity}-${toCity}`;
   const pricing = ROUTE_PRICES[routeKey] || { rwf: 38000, ugx: 100000, kes: 4000, usd: 30, duration: 480 };
@@ -89,7 +143,7 @@ function generateDailyTrips(fromCity: string, toCity: string, date: string) {
       plateNumber: 'RAD 782K',
       busType: 'VIP_EXECUTIVE',
       seatLayout: '2x2',
-      seatCount: 48,
+      seatCount: 40,
     },
     {
       id: `trip_${fromCity}_${toCity}_${date}_1400`,
@@ -99,7 +153,7 @@ function generateDailyTrips(fromCity: string, toCity: string, date: string) {
       plateNumber: 'RAC 459M',
       busType: 'LUXURY_COACH',
       seatLayout: '2x2',
-      seatCount: 48,
+      seatCount: 40,
     },
     {
       id: `trip_${fromCity}_${toCity}_${date}_2000`,
@@ -109,46 +163,49 @@ function generateDailyTrips(fromCity: string, toCity: string, date: string) {
       plateNumber: 'UBK 112L',
       busType: 'VIP_EXECUTIVE',
       seatLayout: '2x1',
-      seatCount: 44,
+      seatCount: 40,
     },
   ];
 
   return buses
-    .map((b) => ({
-      id: b.id,
-      routeId: `route_${fromCity}_${toCity}`,
-      busId: `bus_${b.plateNumber}`,
-      departureDate: date,
-      departureTime: b.departureTime,
-      arrivalTime: b.arrivalTime,
-      priceRwf: pricing.rwf,
-      priceUgx: pricing.ugx,
-      priceKes: pricing.kes,
-      priceUsd: pricing.usd,
-      priceSsp: pricing.ssp || 0,
-      status: 'SCHEDULED',
-      availableSeats: b.seatCount - 4,
-      occupiedSeats: [1, 2, 12, 14],
-      lockedSeats: [],
-      route: {
-        id: `route_${fromCity}_${toCity}`,
-        originId: `dest_${fromCity}`,
-        destinationId: `dest_${toCity}`,
-        distanceKm: 500,
-        durationMinutes: pricing.duration,
-        origin: { name: fromCity, terminalName: originTerminal, country: 'East Africa' },
-        destination: { name: toCity, terminalName: destTerminal, country: 'East Africa' },
-      },
-      bus: {
-        id: `bus_${b.plateNumber}`,
-        busModel: b.busModel,
-        plateNumber: b.plateNumber,
-        busType: b.busType,
-        seatLayout: b.seatLayout,
-        seatCount: b.seatCount,
-        amenities: ['WIFI', 'AC', 'COMPLIMENTARY_WATER', 'USB_POWER'],
-      },
-    }))
+    .map((b) => {
+      const occupied = getOccupiedSeatsForTrip(b.id, date, b.seatCount);
+      return {
+        id: b.id,
+        routeId: `route_${fromCity}_${toCity}`,
+        busId: `bus_${b.plateNumber}`,
+        departureDate: date,
+        departureTime: b.departureTime,
+        arrivalTime: b.arrivalTime,
+        priceRwf: pricing.rwf,
+        priceUgx: pricing.ugx,
+        priceKes: pricing.kes,
+        priceUsd: pricing.usd,
+        priceSsp: pricing.ssp || 0,
+        status: 'SCHEDULED',
+        availableSeats: b.seatCount - occupied.length,
+        occupiedSeats: occupied,
+        lockedSeats: [],
+        route: {
+          id: `route_${fromCity}_${toCity}`,
+          originId: `dest_${fromCity}`,
+          destinationId: `dest_${toCity}`,
+          distanceKm: 500,
+          durationMinutes: pricing.duration,
+          origin: { name: fromCity, terminalName: originTerminal, country: 'East Africa' },
+          destination: { name: toCity, terminalName: destTerminal, country: 'East Africa' },
+        },
+        bus: {
+          id: `bus_${b.plateNumber}`,
+          busModel: b.busModel,
+          plateNumber: b.plateNumber,
+          busType: b.busType,
+          seatLayout: b.seatLayout,
+          seatCount: b.seatCount,
+          amenities: ['WIFI', 'AC', 'COMPLIMENTARY_WATER', 'USB_POWER'],
+        },
+      };
+    })
     .filter((trip) => !isTripInPast(trip.departureDate, trip.departureTime));
 }
 
