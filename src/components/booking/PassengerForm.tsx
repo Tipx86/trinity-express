@@ -109,75 +109,8 @@ export default function PassengerForm({
         </div>
       </div>
 
-      {/* Primary Contact Details — auto-synced from Passenger 1 */}
-      <div className="bg-white rounded-2xl border border-[#0072C6]/40 shadow-sm overflow-hidden">
-        {/* Card header */}
-        <div className="bg-[#0B1E38] px-5 py-3.5 flex items-start justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-white">Primary Contact Details</h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Automatically filled from Passenger 1 below. Booking confirmation, digital ticket, and SMS alerts are sent here.
-            </p>
-          </div>
-          <span className="ml-3 mt-0.5 flex-shrink-0 inline-flex items-center space-x-1 bg-[#0072C6]/20 border border-[#0072C6]/40 text-[#38BDF8] text-[10px] font-bold px-2 py-0.5 rounded-full">
-            <Sparkles className="w-3 h-3" />
-            <span>Auto-filled</span>
-          </span>
-        </div>
 
-        <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className={labelClass}>
-              <span className="flex items-center space-x-1">
-                <User className="w-3.5 h-3.5 text-[#0072C6]" />
-                <span>Contact Full Name</span>
-              </span>
-            </label>
-            <input
-              type="text"
-              readOnly
-              tabIndex={-1}
-              value={contactName}
-              placeholder="Fill in Passenger 1 name below"
-              className={`${inputClass} bg-slate-100 text-slate-500 cursor-default`}
-            />
-          </div>
 
-          <div>
-            <label className={labelClass}>
-              <span className="flex items-center space-x-1">
-                <Mail className="w-3.5 h-3.5 text-[#0072C6]" />
-                <span>Email Address</span>
-              </span>
-            </label>
-            <input
-              type="email"
-              readOnly
-              tabIndex={-1}
-              value={contactEmail}
-              placeholder="Fill in Passenger 1 email below"
-              className={`${inputClass} bg-slate-100 text-slate-500 cursor-default`}
-            />
-          </div>
-
-          <div>
-            <label className={labelClass}>
-              <span className="flex items-center space-x-1">
-                <Phone className="w-3.5 h-3.5 text-[#0072C6]" />
-                <span>Phone / WhatsApp</span>
-              </span>
-            </label>
-            <input
-              type="tel"
-              readOnly
-              tabIndex={-1}
-              value={contactPhone}
-              placeholder="Fill in Passenger 1 phone below"
-              className={`${inputClass} bg-slate-100 text-slate-500 cursor-default font-mono`}
-            />
-          </div>
-        </div>
-      </div>
 
       {/* Individual Passenger Forms */}
       <div className="space-y-4">
