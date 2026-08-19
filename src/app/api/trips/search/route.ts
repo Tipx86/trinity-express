@@ -136,10 +136,10 @@ function generateDailyTrips(fromCity: string, toCity: string, date: string) {
 
   const buses = [
     {
-      id: `trip_${fromCity}_${toCity}_${date}_0500`,
-      departureTime: '05:00',
-      arrivalTime: '14:30',
-      busModel: 'Scania Touring HD VIP (5AM Express)',
+      id: `trip_${fromCity}_${toCity}_${date}_0700`,
+      departureTime: '07:00',
+      arrivalTime: '16:30',
+      busModel: 'Scania Touring HD VIP (7AM Express)',
       plateNumber: 'RAD 782K',
       busType: 'VIP_EXECUTIVE',
       seatLayout: '2x2',
